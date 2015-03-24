@@ -29,17 +29,7 @@ module ActionController
 
       def test_render_using_adapter_override
         get :render_using_adapter_override
-
-        expected = {
-          data: {
-            name: "Name 1",
-            description: "Description 1",
-            id: assigns(:profile).id.to_s,
-            type: "profiles"
-          }
-        }
-
-        assert_equal expected.to_json, response.body
+        assert_equal '{"profiles":{"name":"Name 1","description":"Description 1"}}', response.body
       end
 
       def test_render_skipping_adapter

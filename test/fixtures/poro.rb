@@ -63,7 +63,6 @@ Author = Class.new(Model)
 Bio = Class.new(Model)
 Blog = Class.new(Model)
 Role = Class.new(Model)
-User = Class.new(Model)
 module Spam; end
 Spam::UnrelatedLink = Class.new(Model)
 

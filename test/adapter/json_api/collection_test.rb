@@ -25,61 +25,18 @@ module ActiveModel
           end
 
           def test_include_multiple_posts
-            expected = [
-              {
-                id: "1",
-                type: "posts",
-                title: "Hello!!",
-                body: "Hello, world!!",
-                links: {
-                  comments: { linkage: [] },
-                  blog: { linkage: { type: "blogs", id: "999" } },
-                  author: { linkage: { type: "authors", id: "1" } }
-                }
-              },
-              {
-                id: "2",
-                type: "posts",
-                title: "New Post",
-                body: "Body",
-                links: {
-                  comments: { linkage: [] },
-                  blog: { linkage: { type: "blogs", id: "999" } },
-                  author: { linkage: { type: "authors", id: "1" } }
-                }
-              }
-            ]
-
-            assert_equal(expected, @adapter.serializable_hash[:data])
+            assert_equal([
+                           { title: "Hello!!", body: "Hello, world!!", id: "1", links: { comments: [], blog: "999", author: "1" } },
+                           { title: "New Post", body: "Body", id: "2", links: { comments: [], blog: "999", author: "1" } }
+                         ], @adapter.serializable_hash[:posts])
           end
 
           def test_limiting_fields
             @adapter = ActiveModel::Serializer::Adapter::JsonApi.new(@serializer, fields: ['title'])
-
-            expected = [
-              {
-                id: "1",
-                type: "posts",
-                title: "Hello!!",
-                links: {
-                  comments: { linkage: [] },
-                  blog: { linkage: { type: "blogs", id: "999" } },
-                  author: { linkage: { type: "authors", id: "1" } }
-                }
-              },
-              {
-                id: "2",
-                type: "posts",
-                title: "New Post",
-                links: {
-                  comments: { linkage: [] },
-                  blog: { linkage: { type: "blogs", id: "999" } },
-                  author: { linkage: { type: "authors", id: "1" } }
-                }
-              }
-            ]
-
-            assert_equal(expected, @adapter.serializable_hash[:data])
+            assert_equal([
+              { title: "Hello!!", links: { comments: [], blog: "999", author: "1" } },
+              { title: "New Post", links: { comments: [], blog: "999", author: "1" } }
+            ], @adapter.serializable_hash[:posts])
           end
 
         end

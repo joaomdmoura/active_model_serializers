@@ -29,67 +29,37 @@ module ActiveModel
           end
 
           def test_includes_comment_ids
-            expected = {
-              linkage: [
-                { type: 'comments', id: '1' },
-                { type: 'comments', id: '2' }
-              ]
-            }
-
-            assert_equal(expected, @adapter.serializable_hash[:data][:links][:comments])
+            assert_equal(['1', '2'],
+                         @adapter.serializable_hash[:posts][:links][:comments])
           end
 
-          def test_includes_linked_data
+          def test_includes_linked_comments
             # If CommentPreviewSerializer is applied correctly the body text will not be present in the output
-            expected = [
-              {
-                id: '1',
-                type: 'comments',
-                links: {
-                  post: { linkage: { type: 'posts', id: @post.id.to_s } }
-                }
-              },
-              {
-                id: '2',
-                type: 'comments',
-                links: {
-                  post: { linkage: { type: 'posts', id: @post.id.to_s } }
-                }
-              },
-              {
-                id: @author.id.to_s,
-                type: "authors",
-                links: {
-                  posts: { linkage: [ {type: "posts", id: @post.id.to_s } ] }
-                }
-              }
-            ]
-
-            assert_equal(expected, @adapter.serializable_hash[:included])
+            assert_equal([{ id: '1', links: { post: @post.id.to_s}},
+                          { id: '2', links: { post: @post.id.to_s}}],
+                         @adapter.serializable_hash[:linked][:comments])
           end
 
           def test_includes_author_id
-            expected = {
-              linkage: { type: "authors", id: @author.id.to_s }
-            }
+            assert_equal(@author.id.to_s,
+                         @adapter.serializable_hash[:posts][:links][:author])
+          end
 
-            assert_equal(expected, @adapter.serializable_hash[:data][:links][:author])
+          def test_includes_linked_authors
+            assert_equal([{ id: @author.id.to_s, links: { posts: [@post.id.to_s] } }],
+                         @adapter.serializable_hash[:linked][:authors])
           end
 
           def test_explicit_serializer_with_null_resource
             @post.author = nil
-
-            expected = { linkage: nil }
-
-            assert_equal(expected, @adapter.serializable_hash[:data][:links][:author])
+            assert_equal(nil,
+                         @adapter.serializable_hash[:posts][:links][:author])
           end
 
           def test_explicit_serializer_with_null_collection
             @post.comments = []
-
-            expected = { linkage: [] }
-
-            assert_equal(expected, @adapter.serializable_hash[:data][:links][:comments])
+            assert_equal([],
+                         @adapter.serializable_hash[:posts][:links][:comments])
           end
         end
       end
