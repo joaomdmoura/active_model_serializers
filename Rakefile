@@ -9,4 +9,11 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
+Rake::TestTask.new :benchmark do |t|
+  t.libs << "test"
+  t.test_files = FileList['test/**/*_benchmark.rb']
+  t.ruby_opts = ['-r./test/test_helper.rb']
+  t.verbose = true
+end
+
 task :default => :test
