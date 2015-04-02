@@ -35,7 +35,7 @@ module ActiveModel
 
           def test_includes_linked_bio
             @adapter = ActiveModel::Serializer::Adapter::JsonApi.new(@serializer, include: 'bio')
-            assert_equal([{id: "43", :content=>"AMS Contributor", :links=>{:author=>"1"}}], @adapter.serializable_hash[:linked][:bios])
+            assert_equal([{id: "43", rating: nil, :content=>"AMS Contributor", :links=>{:author=>"1"}}], @adapter.serializable_hash[:linked][:bios])
           end
         end
       end

@@ -74,6 +74,7 @@ module ActionController
 
         def render_collection_with_include
           setup_post
+          @post.author = @author2
           render json: [@post], include: ['author', 'comments'], adapter: :json_api
         end
       end
@@ -110,12 +111,16 @@ module ActionController
           "roles"=>[{
             "id" => "1",
             "name" => "admin",
+            "description" => nil,
+            "slug" => "admin-1",
             "links" => {
               "author" => "1"
             }
           }, {
             "id" => "2",
             "name" => "colab",
+            "description" => nil,
+            "slug" => "colab-2",
             "links" => {
               "author" => "1"
             }

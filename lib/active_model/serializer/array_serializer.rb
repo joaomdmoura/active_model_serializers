@@ -9,7 +9,12 @@ module ActiveModel
       def initialize(objects, options = {})
         options.merge!(root: nil)
 
+        puts "" if $debug
         @objects = objects.map do |object|
+
+          puts "serializer: #{ActiveModel::Serializer.serializer_for(object)}" if $debug
+          puts "objects: #{object.inspect}" if $debug
+          ActiveModel::Serializer.serializer_for(object)
           serializer_class = options.fetch(
             :serializer,
             ActiveModel::Serializer.serializer_for(object)
