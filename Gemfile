@@ -3,8 +3,10 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in active_model_serializers.gemspec
 gemspec
 
-gem "minitest"
-gem "ruby-prof"
+gem 'minitest'
+gem 'ruby-prof'
+gem 'pry'
+gem 'rugged'
 
 version = ENV["RAILS_VERSION"] || "4.1"
 

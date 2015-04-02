@@ -1,5 +1,9 @@
+# encoding: utf-8
 require 'test_helper'
+require 'benchmark_helper'
 require 'ruby-prof'
+require 'rugged'
+require 'pry'
 
 module ActionController
   module Serialization
@@ -18,10 +22,21 @@ module ActionController
         result = RubyProf.profile do
           get :render_using_implicit_serializer
         end
-        printer = RubyProf::FlatPrinter.new(result)
-        open('myfile.out', 'w') do |f|
-          f.puts result.threads.first.total_time
-        end
+
+        repo = Rugged::Repository.new('.')
+        ref  = repo.head
+
+        actual_commit = ref.target.oid
+        last_commit   = ref.target.parents.last.oid
+        binding.pry
+
+        # printer = RubyProf::FlatPrinter.new(result)
+        # benchmark = JSON.parse(File.read('benchmark.json'))
+        # benchmark["results"]["#{ref.target_id}"] = "\"#{__method__.to_s}\": #{result.threads.first.total_time}"
+
+        # open('benchmark.json', 'w') do |f|
+        #   f << benchmark.to_json
+        # end
       end
     end
   end
