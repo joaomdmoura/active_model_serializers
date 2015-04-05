@@ -6,6 +6,7 @@ module ActiveModel
       class JsonApi
         class LinkedTest < Minitest::Test
           def setup
+            ActionController::Base.cache_store.clear
             @author1 = Author.new(id: 1, name: 'Steve K.')
             @author2 = Author.new(id: 2, name: 'Tenderlove')
             @bio1 = Bio.new(id: 1, content: 'AMS Contributor')
@@ -39,7 +40,7 @@ module ActiveModel
             @bio2.author = @author2
           end
 
-          def test_include_multiple_posts_and_linked
+          def test_include_multiple_posts_and_linked_array
             serializer = ArraySerializer.new([@first_post, @second_post])
             adapter = ActiveModel::Serializer::Adapter::JsonApi.new(
               serializer,
@@ -57,14 +58,14 @@ module ActiveModel
                     id: "1",
                     body: "ZOMG A COMMENT",
                     links: {
-                      post: "1",
+                      post: "10",
                       author: nil
                     }
                   }, {
                     id: "2",
                     body: "ZOMG ANOTHER COMMENT",
                     links: {
-                      post: "1",
+                      post: "10",
                       author: nil
                     }
                   }
@@ -74,7 +75,7 @@ module ActiveModel
                     id: "1",
                     name: "Steve K.",
                     links: {
-                      posts: ["1", "3"],
+                      posts: ["10", "30"],
                       roles: [],
                       bio: "1"
                     }
@@ -82,7 +83,7 @@ module ActiveModel
                     id: "2",
                     name: "Tenderlove",
                     links: {
-                      posts: ["2"],
+                      posts: ["20"],
                       roles: [],
                       bio: "2"
                     }
@@ -91,12 +92,14 @@ module ActiveModel
                 bios: [
                   {
                     id: "1",
+                    rating: nil,
                     content: "AMS Contributor",
                     links: {
                       author: "1"
                     }
                   }, {
                     id: "2",
+                    rating: nil,
                     content: "Rails Contributor",
                     links: {
                       author: "2"
@@ -116,7 +119,7 @@ module ActiveModel
                   }
                 },
                 {
-                  id: "2",
+                  id: "20",
                   title: "New Post",
                   body: "Body",
                   links: {

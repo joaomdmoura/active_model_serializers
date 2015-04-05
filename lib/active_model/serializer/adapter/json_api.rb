@@ -1,5 +1,4 @@
 require 'active_model/serializer/adapter/json_api/fragment_cache'
-require 'pry'
 
 module ActiveModel
   class Serializer
@@ -8,7 +7,8 @@ module ActiveModel
         def initialize(serializer, options = {})
           super
           serializer.root = true
-          @hash = { }
+          @hash = {}
+          @top = @options.fetch(:top) { @hash }
 
           if fields = options.delete(:fields)
             @fieldset = ActiveModel::Serializer::Fieldset.new(fields, serializer.json_key)
@@ -28,7 +28,6 @@ module ActiveModel
             @hash[@root] = attributes_for_serializer(serializer, @options)
             add_resource_links(@hash[@root], serializer)
           end
-
           @hash
         end
 
@@ -45,16 +44,16 @@ module ActiveModel
 
           if name.to_s == type || !type
             resource[:links][name] ||= []
-            resource[:links][name] = serializers.map{|serializer| serializer.id.to_s }.uniq
+            resource[:links][name] += serializers.map{|serializer| serializer.id.to_s }
           else
             resource[:links][name] ||= {}
             resource[:links][name][:type] = type
             resource[:links][name][:ids] ||= []
-            resource[:links][name][:ids] = serializers.map{|serializer| serializer.id.to_s }.uniq
+            resource[:links][name][:ids] += serializers.map{|serializer| serializer.id.to_s }
           end
         end
 
-        def add_link(resource, name, serializer, val=nil)
+        def add_link(resource, name, serializer)
           resource[:links] ||= {}
           resource[:links][name] = nil
 
@@ -77,14 +76,15 @@ module ActiveModel
 
           if include_assoc?(resource_path) && resource_type = serialized_object_type(serializers)
             plural_name = resource_type.pluralize.to_sym
-            @hash[:linked] ||= {}
-            @hash[:linked][plural_name] ||= []
+            @top[:linked] ||= {}
+            @top[:linked][plural_name] ||= []
 
             serializers.each do |serializer|
               attrs = attributes_for_serializer(serializer, @options)
 
               add_resource_links(attrs, serializer, add_linked: false)
-              @hash[:linked][plural_name].push(attrs) unless @hash[:linked][plural_name].include?(attrs)
+
+              @top[:linked][plural_name].push(attrs) unless @top[:linked][plural_name].include?(attrs)
             end
           end
 
@@ -99,16 +99,16 @@ module ActiveModel
           if serializer.respond_to?(:each)
             result = []
             serializer.each do |object|
-              options[:fields] = @fieldset && @fieldset.fields_for(serializer)
               result << cache_check(object) do
+                options[:fields] = @fieldset && @fieldset.fields_for(serializer)
                 attributes = object.attributes(options)
                 attributes[:id] = attributes[:id].to_s if attributes[:id]
                 result << attributes
               end
             end
           else
+            options[:fields] = @fieldset && @fieldset.fields_for(serializer)
             result = cache_check(serializer) do
-              options[:fields] = @fieldset && @fieldset.fields_for(serializer)
               result = serializer.attributes(options)
               result[:id] = result[:id].to_s if result[:id]
               result
@@ -154,11 +154,7 @@ module ActiveModel
             if association.respond_to?(:each)
               add_links(attrs, name, association)
             else
-              if opts[:virtual_value]
-                add_link(attrs, name, nil, opts[:virtual_value])
-              else
-                add_link(attrs, name, association)
-              end
+              add_link(attrs, name, association)
             end
 
             if @options[:embed] != :ids && options[:add_linked]

@@ -41,14 +41,14 @@ module ActiveModel
       private
 
       def cache_check(serializer)
-        @serializer = serializer
-        @klass      = serializer.class
+        @cached_serializer = serializer
+        @klass             = @cached_serializer.class
         if is_cached?
           @klass._cache.fetch(cache_key, @klass._cache_options) do
             yield
           end
         elsif is_fragment_cached?
-          FragmentCache.new(self, serializer, @options, @root).fetch
+          FragmentCache.new(self, @cached_serializer, @options, @root).fetch
         else
           yield
         end
@@ -63,7 +63,7 @@ module ActiveModel
       end
 
       def cache_key
-        (@klass._cache_key) ? "#{@klass._cache_key}/#{@serializer.object.id}-#{@serializer.object.updated_at}" : @serializer.object.cache_key
+        (@klass._cache_key) ? "#{@klass._cache_key}/#{@cached_serializer.object.id}-#{@cached_serializer.object.updated_at}" : @cached_serializer.object.cache_key
       end
 
       def meta
