@@ -35,6 +35,9 @@ module ActionController
 
     [:_render_option_json, :_render_with_renderer_json].each do |renderer_method|
       define_method renderer_method do |resource, options|
+        p 'resource'
+        p resource
+        p resource.class.name.downcase
         @_adapter_opts, @_serializer_opts =
           options.partition { |k, _| ADAPTER_OPTION_KEYS.include? k }.map { |h| Hash[h] }
 
