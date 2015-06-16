@@ -22,7 +22,12 @@ module ActiveModel
         if @objects.first
           @objects.first.json_key.pluralize
         else
-          @objects.class.name.downcase
+          p '========================================================'
+          p 'objects'
+          p @objects
+          p '========================================================'
+          binding.pry
+          @objects.name.downcase.pluralize
         end
       end
 
