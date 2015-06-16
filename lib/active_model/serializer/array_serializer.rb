@@ -7,7 +7,8 @@ module ActiveModel
       attr_reader :meta, :meta_key
 
       def initialize(objects, options = {})
-        @objects = objects.map do |object|
+        @resource = objects
+        @objects  = objects.map do |object|
           serializer_class = options.fetch(
             :serializer,
             ActiveModel::Serializer.serializer_for(object)
