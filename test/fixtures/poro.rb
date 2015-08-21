@@ -17,12 +17,8 @@ class Model
     "#{self.class.name.downcase}/#{self.id}-#{self.updated_at.strftime("%Y%m%d%H%M%S%9N")}"
   end
 
-  def cache_key_with_digest
-    "#{cache_key}/#{FILE_DIGEST}"
-  end
-
-  def updated_at
-    @attributes[:updated_at] ||= DateTime.now.to_time
+  def serializable_hash(options = nil)
+    @attributes
   end
 
   def read_attribute_for_serialization(name)
@@ -37,6 +33,9 @@ class Model
     @attributes[:id] || @attributes['id'] || object_id
   end
 
+  ### Helper methods, not required to be serializable
+  #
+  # Convenience for adding @attributes readers and writers
   def method_missing(meth, *args)
     if meth.to_s =~ /^(.*)=$/
       @attributes[$1.to_sym] = args[0]
@@ -45,6 +44,14 @@ class Model
     else
       super
     end
+  end
+
+  def cache_key_with_digest
+    "#{cache_key}/#{FILE_DIGEST}"
+  end
+
+  def updated_at
+    @attributes[:updated_at] ||= DateTime.now.to_time
   end
 end
 
@@ -255,6 +262,7 @@ VirtualValueSerializer = Class.new(ActiveModel::Serializer) do
 end
 
 Spam::UnrelatedLinkSerializer = Class.new(ActiveModel::Serializer) do
+  cache only: [:id]
   attributes :id
 end
 

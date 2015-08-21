@@ -27,7 +27,7 @@ module ActiveModel
 
       def as_json(options = nil)
         hash = serializable_hash(options)
-        include_meta(hash) unless self.class == FlattenJson
+        include_meta(hash)
         hash
       end
 

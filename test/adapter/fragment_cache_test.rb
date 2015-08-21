@@ -4,6 +4,7 @@ module ActiveModel
     class Adapter
       class FragmentCacheTest < Minitest::Test
         def setup
+          @spam            = Spam::UnrelatedLink.new(id: "spam-id-1")
           @author          = Author.new(name: 'Joao M. D. Moura')
           @role            = Role.new(name: 'Great Author', description:nil)
           @role.author     = [@author]
@@ -19,6 +20,13 @@ module ActiveModel
             name: @role.name
           }
           assert_equal(@role_hash.fetch, expected_result)
+        end
+
+        def test_fragment_fetch_with_namespaced_object
+          expected_result = {
+            id: @spam.id
+          }
+          assert_equal(@spam_hash.fetch, expected_result)
         end
       end
     end

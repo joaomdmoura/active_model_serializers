@@ -5,30 +5,46 @@ module ActiveModel
     class Adapter
       class JsonApi < Adapter
         @root = :data
-        DEFAULT_ATTRIBUTES = [:type, :id]
+        DEFAULT_ATTRIBUTES = [:id, :type]
 
-        def self.params(permitted, associations)
+        def self.params_whitelist(permitted, associations, forbid_id = false)
           relationships = {}
           associations.each do |assoc|
-             relationships[assoc] = {}
-             relationships[assoc][@root] = DEFAULT_ATTRIBUTES
-           end
+            relationships[assoc] = [ @root, @root => DEFAULT_ATTRIBUTES ]
+          end
+          whitelist = :type, { attributes: permitted }, { relationships: relationships }
+          whitelist << :id unless forbid_id
 
-          return :type, {attributes: permitted}, {relationships: relationships}
+          whitelist
         end
 
         def self.parse(params)
           attrs, assoc = {}, {}
           attrs = params['attributes'] if params['attributes']
-          assoc = params['relationships'].map {|a| {a.shift => a.first['data']['type'].camelize.singularize.safe_constantize.find(a.shift['data']['id'])}} if params['relationships']
+          attrs['id'] = params['id'] if params['id']
+          assoc = params['relationships'].map do |rel|
+            key, data = rel.shift.singularize, rel.first['data']
+            key = if data.kind_of? Array
+                    "#{key}_ids"
+                  else
+                    "#{key}_id"
+                  end
+            value = if data.kind_of? Array
+                      data.map { |ri| ri['id'] }
+                    elsif data
+                      data['id']
+                    else
+                      nil
+                    end
+            {key => value}
+          end if params['relationships']
           assoc.reduce attrs, :merge
         end
 
         def initialize(serializer, options = {})
           super
           @root = self.class.root
-          @hash = {}
-          @hash[@root] = []
+          @hash = { @root => [] }
 
           if fields = options.delete(:fields)
             @fieldset = ActiveModel::Serializer::Fieldset.new(fields, serializer.json_key)
@@ -65,15 +81,15 @@ module ActiveModel
 
         def add_relationships(resource, name, serializers)
           resource[:relationships] ||= {}
-          resource[:relationships][name] ||= { data: [] }
+          resource[:relationships][name] ||= { @root => [] }
+
           resource[:relationships][name][@root] ||= []
           resource[:relationships][name][@root] += serializers.map { |serializer| { type: serializer.json_api_type, id: serializer.id.to_s } }
         end
 
         def add_relationship(resource, name, serializer, val=nil)
           resource[:relationships] ||= {}
-          resource[:relationships][name] = {}
-          resource[:relationships][name][@root] = val
+          resource[:relationships][name] = { @root => val }
 
           if serializer && serializer.object
             resource[:relationships][name][@root] = { type: serializer.json_api_type, id: serializer.id.to_s }
