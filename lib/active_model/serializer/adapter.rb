@@ -86,6 +86,7 @@ module ActiveModel
       require 'active_model/serializer/adapter/attributes'
       require 'active_model/serializer/adapter/json'
       require 'active_model/serializer/adapter/json_api'
+      require 'active_model/serializer/adapter/json_api_rc'
     end
   end
 end
