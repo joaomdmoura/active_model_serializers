@@ -31,7 +31,7 @@ module ActiveModel
           #         title: 'Title 1',
           #         date: '2015-12-20'
           #       },
-          #       associations: {
+          #       relationships: {
           #         author: {
           #           data: {
           #             type: 'user',
